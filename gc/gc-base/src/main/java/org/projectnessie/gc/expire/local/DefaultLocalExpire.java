@@ -63,7 +63,7 @@ public abstract class DefaultLocalExpire implements Expire {
 
   @Override
   public DeleteSummary expire() {
-    LOGGER.info("live-set#{}: Starting expiry.", expireParameters().liveContentSet().id());
+    LOGGER.info("Enrty-Point Sweep - live-set#{}: Starting expiry with number of fork {}.", expireParameters().liveContentSet().id(),parallelism());
     Instant started = clock().instant();
     expireParameters().liveContentSet().startExpireContents(started);
 
@@ -72,12 +72,12 @@ public abstract class DefaultLocalExpire implements Expire {
     RuntimeException error = null;
     try {
       DeleteSummary deleteSummary =
-          forkJoinPool.invoke(ForkJoinTask.adapt(this::expireInForkJoinPool));
+        forkJoinPool.invoke(ForkJoinTask.adapt(this::expireInForkJoinPool));
       LOGGER.info(
-          "live-set#{}: Expiry finished, took {}, deletion summary: {}.",
-          expireParameters().liveContentSet().id(),
-          Duration.between(started, clock().instant()),
-          deleteSummary);
+        "live-set#{}: Expiry finished, took {}, deletion summary: {}.",
+        expireParameters().liveContentSet().id(),
+        Duration.between(started, clock().instant()),
+        deleteSummary);
       return deleteSummary;
     } catch (RuntimeException e) {
       error = e;
@@ -91,22 +91,29 @@ public abstract class DefaultLocalExpire implements Expire {
   private DeleteSummary expireInForkJoinPool() {
     try (Stream<String> contentIds = expireParameters().liveContentSet().fetchContentIds()) {
       return contentIds
-          .parallel()
-          .map(this::expireSingleContent)
-          .reduce(DeleteSummary.EMPTY, DeleteSummary::add);
+        .parallel()
+        .map(this::expireSingleContent)
+        .reduce(DeleteSummary.EMPTY, DeleteSummary::add);
     }
   }
 
   private DeleteSummary expireSingleContent(String contentId) {
     LOGGER.debug(
-        "live-set#{}: Expiring content ID {}.",
-        expireParameters().liveContentSet().id(),
-        contentId);
-    return PerContentDeleteExpired.builder()
-        .expireParameters(expireParameters())
-        .contentId(contentId)
-        .build()
-        .expire();
+      "live-set#{}: Expiring content ID {}.",
+      expireParameters().liveContentSet().id(),
+      contentId);
+
+    long start = System.currentTimeMillis();
+
+    DeleteSummary summary = PerContentDeleteExpired.builder()
+      .expireParameters(expireParameters())
+      .contentId(contentId)
+      .build()
+      .expire();
+
+    LOGGER.info("Expire time for contentId:{} is {}ms with Delete Result success: {}, failed {}"
+      ,contentId, System.currentTimeMillis() - start, summary.deleted(), summary.failures());
+    return summary;
   }
 
   abstract ExpireParameters expireParameters();
