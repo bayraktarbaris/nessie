@@ -50,6 +50,7 @@ import org.projectnessie.gc.tool.cli.options.IcebergOptions;
 import org.projectnessie.gc.tool.cli.options.LiveContentSetsStorageOptions;
 import org.projectnessie.gc.tool.cli.options.MarkOptions;
 import org.projectnessie.gc.tool.cli.options.SweepOptions;
+import org.projectnessie.gc.tool.cli.options.CleanGCTablesOptions;
 import picocli.CommandLine;
 import picocli.CommandLine.ExecutionException;
 import picocli.CommandLine.Help.Ansi;
@@ -273,6 +274,20 @@ public abstract class BaseRepositoryCommand extends BaseCommand {
 
       return summary.failures() == 0L ? 0 : 1;
     }
+  }
+
+  protected Integer truncateTables(LiveContentSetsRepository liveContentSetsRepository, CleanGCTablesOptions cleanGCTablesOptions) {
+
+    Integer truncateTableCount = 0;
+    out.printf("Starting clean-tables");
+
+    for(String tableName : cleanGCTablesOptions.getTruncateTableNames()){
+      out.printf("truncating table `%s`", tableName);
+      truncateTableCount+=liveContentSetsRepository.truncateTable(tableName);
+
+    }
+    out.printf("number of `%s` tables truncated", truncateTableCount);
+    return truncateTableCount;
   }
 
   protected IcebergFiles createIcebergFiles(IcebergOptions icebergOptions) {

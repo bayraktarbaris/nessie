@@ -15,8 +15,8 @@
  */
 package org.projectnessie.gc.tool.cli.commands;
 
-import org.projectnessie.gc.contents.LiveContentSet;
 import org.projectnessie.gc.contents.LiveContentSetsRepository;
+import org.projectnessie.gc.tool.cli.Closeables;
 import org.projectnessie.gc.tool.cli.options.CleanGCTablesOptions;
 import org.projectnessie.gc.tool.cli.options.EnvironmentDefaultProvider;
 import picocli.CommandLine;
@@ -29,32 +29,12 @@ import picocli.CommandLine;
   description =
     "Truncate nessie-gc tables to avoid increasing storage of DB, "
       + "must not be used with the in-memory contents-storage.")
-public class CleanGCTables extends BaseLiveSetCommand {
+public class CleanGCTables extends BaseRepositoryCommand {
 
   @CommandLine.Mixin CleanGCTablesOptions options;
 
   @Override
-  protected Integer call(
-    LiveContentSet liveContentSet, LiveContentSetsRepository liveContentSetsRepository) {
-
-    Integer truncateTableCount = 0;
-    out.printf("Starting clean-tables");
-
-    if (liveContentSet.status() != LiveContentSet.Status.EXPIRY_SUCCESS
-      && liveContentSet.status() != LiveContentSet.Status.EXPIRY_FAILED) {
-      throw new CommandLine.ExecutionException(
-        commandSpec.commandLine(),
-        "Expected live-set to have status EXPIRY_SUCCESS or EXPIRY_FAILED, but status is "
-          + liveContentSet.status());
-    }
-
-    for(String tableName : options.getTruncateTableNames()){
-      out.printf("truncating table `%s`", tableName);
-      truncateTableCount+=liveContentSet.truncateTable(tableName);
-
-    }
-    out.printf("number of `%s` tables truncated", truncateTableCount);
-    return truncateTableCount;
-
+  protected Integer call(Closeables closeables, LiveContentSetsRepository liveContentSetsRepository) {
+      return truncateTables(liveContentSetsRepository, options);
   }
 }
