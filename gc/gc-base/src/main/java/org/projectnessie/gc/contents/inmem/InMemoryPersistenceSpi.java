@@ -249,7 +249,7 @@ public class InMemoryPersistenceSpi implements PersistenceSpi {
   }
 
   @Override
-  public Integer truncateTable(String tableName) {
+  public void truncateTable(String tableName) {
     throw new UnsupportedOperationException("Should never be called");
   }
 

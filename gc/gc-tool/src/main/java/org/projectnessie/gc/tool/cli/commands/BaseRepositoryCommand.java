@@ -283,7 +283,8 @@ public abstract class BaseRepositoryCommand extends BaseCommand {
 
     for(String tableName : cleanGCTablesOptions.getTruncateTableNames()){
       out.printf("truncating table `%s`", tableName);
-      truncateTableCount+=liveContentSetsRepository.truncateTable(tableName);
+      liveContentSetsRepository.truncateTable(tableName);
+      truncateTableCount++;
 
     }
     out.printf("number of `%s` tables truncated", truncateTableCount);

@@ -94,5 +94,5 @@ public interface PersistenceSpi {
    * Returns the number of truncated tables
    */
   @MustBeClosed
-  Integer truncateTable(String tableName);
+  void truncateTable(String tableName);
 }

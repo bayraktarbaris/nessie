@@ -137,7 +137,7 @@ public abstract class LiveContentSetsRepository {
     };
   }
   @MustBeClosed
-  public Integer truncateTable(String tableName) {return persistenceSpi().truncateTable(tableName);}
+  public void truncateTable(String tableName) {persistenceSpi().truncateTable(tableName);}
 
   abstract PersistenceSpi persistenceSpi();
 
