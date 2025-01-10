@@ -340,7 +340,8 @@ public abstract class JdbcPersistenceSpi implements PersistenceSpi {
       singleStatement(
       TRUNCATE_TABLE.replace("table_name", tableName),
       (conn, stmt) -> {
-        stmt.executeQuery();
+        stmt.executeUpdate();
+        conn.commit();
         return null;
       },
       false);

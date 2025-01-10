@@ -35,6 +35,7 @@ public class CleanGCTables extends BaseRepositoryCommand {
 
   @Override
   protected Integer call(Closeables closeables, LiveContentSetsRepository liveContentSetsRepository) {
-      return truncateTables(liveContentSetsRepository, options);
+      truncateTables(liveContentSetsRepository, options);
+      return 0;
   }
 }
