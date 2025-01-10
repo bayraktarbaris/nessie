@@ -336,14 +336,13 @@ public abstract class JdbcPersistenceSpi implements PersistenceSpi {
 
   @Override
   @MustBeClosed
-  public Integer truncateTable(String tableName) {
-    return singleStatement(
+  public void truncateTable(String tableName) {
+      singleStatement(
       TRUNCATE_TABLE.replace("table_name", tableName),
       (conn, stmt) -> {
-        try (ResultSet rs = stmt.executeQuery()) {
-          rs.next();
-          return rs.getInt(1);
-        }
+        stmt.executeUpdate();
+        conn.commit();
+        return null;
       },
       false);
   }
